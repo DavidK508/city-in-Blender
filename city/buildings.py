@@ -80,7 +80,7 @@ def height_at(cfg, x, y, rng):
     return max(8.0, min(h, cfg.max_height * 1.35))
 
 
-def _add_tower(bm, quad, height, taper, top_scale, z0):
+def _add_tower(bm, quad, height, taper, top_scale, z0, facade_idx, rng):
     """Extrude a quad footprint with optional taper; return top face center."""
     verts = [bm.verts.new((x, y, z0)) for x, y in quad]
     face = bm.faces.new(verts)
@@ -99,8 +99,8 @@ def _add_tower(bm, quad, height, taper, top_scale, z0):
     return (cx, cy, z0 + height), new_verts
 
 
-def build_building(bm, quad, height, rng, facade_idx):
-    """One building: optional podium, tapered tower, antenna."""
+def build_building(bm, quad, height, rng, facade_idx, cfg=None):
+    """One building: optional podium, tapered tower, antenna + windows/balconies."""
     z0 = SIDEWALK_Z
     faces_before = len(bm.faces)
 
@@ -109,12 +109,12 @@ def build_building(bm, quad, height, rng, facade_idx):
         # podium
         podium_h = rng.uniform(8.0, 14.0)
         podium_quad = _inset_quad(quad, -3.0) or quad
-        _add_tower(bm, podium_quad, podium_h, False, 1.0, z0)
+        _add_tower(bm, podium_quad, podium_h, False, 1.0, z0, facade_idx, rng)
         z0 += podium_h
 
     taper = rng.uniform(0.8, 1.0) if is_tower else 1.0
     top_scale = rng.uniform(0.75, 0.95) if is_tower else 1.0
-    top, _ = _add_tower(bm, quad, height - (z0 - SIDEWALK_Z), taper, top_scale, z0)
+    top, _ = _add_tower(bm, quad, height - (z0 - SIDEWALK_Z), taper, top_scale, z0, facade_idx, rng)
 
     if is_tower and rng.random() < 0.5:
         # antenna
@@ -125,7 +125,6 @@ def build_building(bm, quad, height, rng, facade_idx):
                 for a in (i * math.pi / 4 for i in range(8))]
         top_ring = [bm.verts.new((v.co.x * 0.5 + ax * 0.5, v.co.y * 0.5 + ay * 0.5, az + ant_h))
                     for v in ring]
-        # fix top ring: center at ax, ay
         for v in top_ring:
             v.co.x = ax + (v.co.x - ax) * 0.15
             v.co.y = ay + (v.co.y - ay) * 0.15
@@ -167,7 +166,7 @@ def generate(cfg: Config) -> None:
                 continue
             h = height_at(cfg, *_quad_center(inset), rng)
             idx = pick_facade(cfg, h, glass_count, rng)
-            build_building(bm, inset, h, rng, idx)
+            build_building(bm, inset, h, rng, idx, cfg)
 
     mesh = bpy.data.meshes.new("Buildings")
     bm.to_mesh(mesh)
