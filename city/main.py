@@ -29,6 +29,13 @@ def _set_render(cfg, preview: bool) -> None:
         scene.eevee.taa_render_samples = cfg.preview_samples if preview else cfg.samples
     scene.render.image_settings.file_format = "PNG"
     scene.render.film_transparent = False
+    scene.view_settings.exposure = -0.3
+    for look in ("AgX - Medium High Contrast", "Medium High Contrast"):
+        try:
+            scene.view_settings.look = look
+            break
+        except TypeError:
+            continue
 
 
 def build(cfg) -> None:

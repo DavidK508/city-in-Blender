@@ -33,7 +33,7 @@ def setup(cfg: Config) -> None:
             sky.sun_rotation = math.radians(135)
         nt.links.new(sky.outputs["Color"], bg.inputs["Color"])
         bg.inputs["Strength"].default_value = 0.45
-        sun_energy = 2.0
+        sun_energy = 1.5
         sun_color = (1.0, 0.95, 0.85, 1.0)
         sun_rot = (math.radians(50), 0, math.radians(-45))
 
@@ -50,7 +50,7 @@ def setup(cfg: Config) -> None:
     # gentle fill for night so silhouettes read
     if cfg.night:
         moon_data = bpy.data.lights.new("Moon", type="SUN")
-        moon_data.energy = 0.3
+        moon_data.energy = 0.8
         moon_data.color = (0.5, 0.6, 0.9)
         moon = bpy.data.objects.new("Moon", moon_data)
         moon.rotation_euler = (math.radians(60), 0, math.radians(140))

@@ -139,9 +139,10 @@ def build_building(bm, quad, height, rng, facade_idx):
 
 
 def pick_facade(cfg, height, glass_count, rng):
+    glass_start = len(materials.FACADE_PALETTES) - glass_count
     if height > 50.0 and rng.random() < cfg.glass_chance:
-        return rng.choice(range(glass_count, glass_count + 2))
-    return rng.randrange(0, glass_count)
+        return rng.randrange(glass_start, len(materials.FACADE_PALETTES))
+    return rng.randrange(0, glass_start)
 
 
 def generate(cfg: Config) -> None:

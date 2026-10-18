@@ -48,21 +48,25 @@ def _facade_mat(name, color, roughness, metallic, glass, night, windows=True):
     mapping.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
     brick = nt.nodes.new("ShaderNodeTexBrick")
     brick.offset = 0.0
-    brick.inputs["Scale"].default_value = 8.0
-    brick.inputs["Mortar Size"].default_value = 0.35
+    brick.inputs["Scale"].default_value = 10.0
+    brick.inputs["Mortar Size"].default_value = 0.25
     brick.inputs["Color1"].default_value = (1, 1, 1, 1)
     brick.inputs["Color2"].default_value = (1, 1, 1, 1)
     brick.inputs["Mortar"].default_value = (0, 0, 0, 1)
+    invert = nt.nodes.new("ShaderNodeMath")
+    invert.operation = "SUBTRACT"
+    invert.inputs[0].default_value = 1.0
+    nt.links.new(brick.outputs["Fac"], invert.inputs[1])
 
     if night:
         emission = nt.nodes.new("ShaderNodeEmission")
         emission.inputs["Color"].default_value = (1.0, 0.75, 0.4, 1.0)
-        emission.inputs["Strength"].default_value = 6.0
+        emission.inputs["Strength"].default_value = 2.2
         mix = nt.nodes.new("ShaderNodeMixShader")
         out = nt.nodes["Material Output"]
         nt.links.new(tex.outputs["Generated"], mapping.inputs["Vector"])
         nt.links.new(mapping.outputs["Vector"], brick.inputs["Vector"])
-        nt.links.new(brick.outputs["Fac"], mix.inputs["Fac"])
+        nt.links.new(invert.outputs["Value"], mix.inputs["Fac"])
         nt.links.new(bsdf.outputs["BSDF"], mix.inputs[1])
         nt.links.new(emission.outputs["Emission"], mix.inputs[2])
         nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])
