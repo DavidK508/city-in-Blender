@@ -34,7 +34,7 @@ class Config:
 
     # Details
     lamp_every: float = 35.0
-    car_count: int = 120
+    car_count: int = 200
     tree_count: int = 400
 
     # Render

@@ -98,8 +98,43 @@ def get_facade_materials(cfg):
     mats = []
     for name, color, rough, metal, glass in FACADE_PALETTES:
         mats.append(_facade_mat(name, color, rough, metal, glass,
-                                night=cfg.night, windows=not glass))
+                                night=cfg.night, windows=False))
     return mats
+
+
+def window_mat(cfg):
+    """Glass panes for geometric windows; random ones lit at night."""
+    mat = bpy.data.materials.new("Window")
+    mat.use_nodes = True
+    nt = mat.node_tree
+    bsdf = _principled(mat)
+    bsdf.inputs["Base Color"].default_value = (0.04, 0.07, 0.1, 1.0)
+    bsdf.inputs["Roughness"].default_value = 0.08
+    bsdf.inputs["Metallic"].default_value = 0.9
+    if cfg.night:
+        geo = nt.nodes.new("ShaderNodeNewGeometry")
+        noise = nt.nodes.new("ShaderNodeTexNoise")
+        noise.inputs["Scale"].default_value = 0.35
+        nt.links.new(geo.outputs["Position"], noise.inputs["Vector"])
+        lit = nt.nodes.new("ShaderNodeMath")
+        lit.operation = "GREATER_THAN"
+        lit.inputs[1].default_value = 0.45
+        nt.links.new(noise.outputs["Fac"], lit.inputs[0])
+        strength = nt.nodes.new("ShaderNodeMath")
+        strength.operation = "MULTIPLY"
+        strength.inputs[1].default_value = 4.0
+        nt.links.new(lit.outputs["Value"], strength.inputs[0])
+        bsdf.inputs["Emission Color"].default_value = (1.0, 0.8, 0.45, 1.0)
+        nt.links.new(strength.outputs["Value"], bsdf.inputs["Emission Strength"])
+    return mat
+
+
+def balcony_mat():
+    return simple_mat("Balcony", (0.25, 0.24, 0.23, 1.0), 0.85)
+
+
+def railing_mat():
+    return simple_mat("Railing", (0.05, 0.05, 0.06, 1.0), 0.5, 0.8)
 
 
 def lamp_material(cfg):

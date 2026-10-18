@@ -43,12 +43,18 @@ def _make_lamp_prototype(cfg):
 
 def _make_car_prototypes(cfg):
     glass = materials.glass_mat()
+    tire = materials.simple_mat("Tire", (0.02, 0.02, 0.02, 1), 0.9)
+    headlight = materials.simple_mat(
+        "Headlight", (0.9, 0.9, 0.85, 1), 0.2,
+        emission=(1.0, 0.95, 0.8, 1), emission_strength=8.0 if cfg.night else 0.0)
+    taillight = materials.simple_mat(
+        "Taillight", (0.8, 0.05, 0.05, 1), 0.3,
+        emission=(1.0, 0.05, 0.05, 1), emission_strength=6.0 if cfg.night else 0.0)
     protos = []
     for i, mat in enumerate(materials.car_materials()):
-        bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, 0))
+        bpy.ops.mesh.primitive_cube_add(size=1, location=(0, 0, 0.55))
         body = bpy.context.active_object
         body.scale = (4.4, 1.9, 0.7)
-        body.location = (0, 0, 0.55)
         body.data.materials.append(mat)
 
         bpy.ops.mesh.primitive_cube_add(size=1, location=(-0.3, 0, 1.15))
@@ -56,8 +62,32 @@ def _make_car_prototypes(cfg):
         cabin.scale = (2.2, 1.7, 0.55)
         cabin.data.materials.append(glass)
 
-        cabin.select_set(True)
-        body.select_set(True)
+        parts = [body, cabin]
+        # wheels
+        for wx in (1.4, -1.4):
+            for wy in (0.95, -0.95):
+                bpy.ops.mesh.primitive_cylinder_add(
+                    radius=0.35, depth=0.25,
+                    location=(wx, wy, 0.35),
+                    rotation=(math.pi / 2, 0, 0))
+                wheel = bpy.context.active_object
+                wheel.data.materials.append(tire)
+                parts.append(wheel)
+        # lights
+        for ly in (0.6, -0.6):
+            bpy.ops.mesh.primitive_cube_add(size=1, location=(2.2, ly, 0.6))
+            hl = bpy.context.active_object
+            hl.scale = (0.08, 0.35, 0.15)
+            hl.data.materials.append(headlight)
+            parts.append(hl)
+            bpy.ops.mesh.primitive_cube_add(size=1, location=(-2.2, ly, 0.6))
+            tl = bpy.context.active_object
+            tl.scale = (0.08, 0.35, 0.15)
+            tl.data.materials.append(taillight)
+            parts.append(tl)
+
+        for p in parts:
+            p.select_set(True)
         bpy.context.view_layer.objects.active = body
         bpy.ops.object.join()
         car = bpy.context.active_object
