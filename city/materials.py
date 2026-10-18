@@ -42,31 +42,52 @@ def _facade_mat(name, color, roughness, metallic, glass, night, windows=True):
     if not windows or glass:
         return mat
 
-    # Window grid via brick texture on generated coordinates
-    tex = nt.nodes.new("ShaderNodeTexCoord")
+    # Window grid via brick texture in world space (one mesh for all buildings).
+    # Brick is 2D in XY, so remap: horizontal = X+Y (works for both wall axes), vertical = Z.
+    geo = nt.nodes.new("ShaderNodeNewGeometry")
+    sep = nt.nodes.new("ShaderNodeSeparateXYZ")
+    nt.links.new(geo.outputs["Position"], sep.inputs["Vector"])
+    hsum = nt.nodes.new("ShaderNodeMath")
+    hsum.operation = "ADD"
+    nt.links.new(sep.outputs["X"], hsum.inputs[0])
+    nt.links.new(sep.outputs["Y"], hsum.inputs[1])
+    combine = nt.nodes.new("ShaderNodeCombineXYZ")
+    nt.links.new(hsum.outputs["Value"], combine.inputs["X"])
+    nt.links.new(sep.outputs["Z"], combine.inputs["Y"])
     mapping = nt.nodes.new("ShaderNodeMapping")
-    mapping.inputs["Scale"].default_value = (1.0, 1.0, 1.0)
+    mapping.inputs["Scale"].default_value = (0.08, 0.08, 0.08)
+    nt.links.new(combine.outputs["Vector"], mapping.inputs["Vector"])
     brick = nt.nodes.new("ShaderNodeTexBrick")
     brick.offset = 0.0
-    brick.inputs["Scale"].default_value = 10.0
-    brick.inputs["Mortar Size"].default_value = 0.25
+    brick.inputs["Scale"].default_value = 1.0
+    brick.inputs["Mortar Size"].default_value = 0.04
     brick.inputs["Color1"].default_value = (1, 1, 1, 1)
     brick.inputs["Color2"].default_value = (1, 1, 1, 1)
     brick.inputs["Mortar"].default_value = (0, 0, 0, 1)
+    nt.links.new(mapping.outputs["Vector"], brick.inputs["Vector"])
     invert = nt.nodes.new("ShaderNodeMath")
     invert.operation = "SUBTRACT"
     invert.inputs[0].default_value = 1.0
     nt.links.new(brick.outputs["Fac"], invert.inputs[1])
+    noise = nt.nodes.new("ShaderNodeTexNoise")
+    noise.inputs["Scale"].default_value = 8.0
+    nt.links.new(mapping.outputs["Vector"], noise.inputs["Vector"])
+    lit = nt.nodes.new("ShaderNodeMath")
+    lit.operation = "GREATER_THAN"
+    lit.inputs[1].default_value = 0.52
+    nt.links.new(noise.outputs["Fac"], lit.inputs[0])
+    mask = nt.nodes.new("ShaderNodeMath")
+    mask.operation = "MULTIPLY"
+    nt.links.new(invert.outputs["Value"], mask.inputs[0])
+    nt.links.new(lit.outputs["Value"], mask.inputs[1])
 
     if night:
         emission = nt.nodes.new("ShaderNodeEmission")
         emission.inputs["Color"].default_value = (1.0, 0.75, 0.4, 1.0)
-        emission.inputs["Strength"].default_value = 2.2
+        emission.inputs["Strength"].default_value = 3.5
         mix = nt.nodes.new("ShaderNodeMixShader")
         out = nt.nodes["Material Output"]
-        nt.links.new(tex.outputs["Generated"], mapping.inputs["Vector"])
-        nt.links.new(mapping.outputs["Vector"], brick.inputs["Vector"])
-        nt.links.new(invert.outputs["Value"], mix.inputs["Fac"])
+        nt.links.new(mask.outputs["Value"], mix.inputs["Fac"])
         nt.links.new(bsdf.outputs["BSDF"], mix.inputs[1])
         nt.links.new(emission.outputs["Emission"], mix.inputs[2])
         nt.links.new(mix.outputs["Shader"], out.inputs["Surface"])

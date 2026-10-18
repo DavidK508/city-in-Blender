@@ -50,7 +50,7 @@ def setup(cfg: Config) -> None:
     # gentle fill for night so silhouettes read
     if cfg.night:
         moon_data = bpy.data.lights.new("Moon", type="SUN")
-        moon_data.energy = 0.8
+        moon_data.energy = 1.5
         moon_data.color = (0.5, 0.6, 0.9)
         moon = bpy.data.objects.new("Moon", moon_data)
         moon.rotation_euler = (math.radians(60), 0, math.radians(140))
@@ -67,10 +67,10 @@ def setup_compositor(cfg: Config) -> None:
     rl = ng.nodes.new("CompositorNodeRLayers")
     glare = ng.nodes.new("CompositorNodeGlare")
     try:
-        glare.inputs["Type"].default_value = "FOG_GLOW"
+        glare.inputs["Type"].default_value = "Bloom"
     except (TypeError, KeyError):
         pass
-    for name, value in (("Threshold", 1.8), ("Strength", 0.25), ("Size", 6)):
+    for name, value in (("Threshold", 3.0), ("Strength", 0.35), ("Size", 5)):
         if name in glare.inputs:
             try:
                 glare.inputs[name].default_value = value

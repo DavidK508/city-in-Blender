@@ -58,6 +58,7 @@ def cli() -> None:
     parser.add_argument("--preview", action="store_true", help="low-res render")
     parser.add_argument("--render", action="store_true", help="final still")
     parser.add_argument("--anim", action="store_true", help="fly-in animation")
+    parser.add_argument("--frames", type=int, default=None, help="override anim frame count")
     parser.add_argument("--save", action="store_true", help="save .blend")
     parser.add_argument("--out", default=None)
     args = parser.parse_args(argv)
@@ -66,6 +67,8 @@ def cli() -> None:
     cfg.seed = args.seed
     cfg.night = args.night
     cfg.anim = args.anim
+    if args.frames:
+        cfg.anim_frames = args.frames
     cfg.__post_init__()  # re-seed rng
 
     t0 = time.time()
@@ -97,10 +100,11 @@ def cli() -> None:
         print(f"[city] render -> {path}")
 
     if args.anim:
-        _set_render(cfg, preview=False)
+        _set_render(cfg, preview=args.preview)
         scene = bpy.context.scene
         scene.frame_start = 1
         scene.frame_end = cfg.anim_frames
+        scene.render.image_settings.media_type = "VIDEO"
         scene.render.image_settings.file_format = "FFMPEG"
         scene.render.ffmpeg.format = "MPEG4"
         scene.render.ffmpeg.codec = "H264"

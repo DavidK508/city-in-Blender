@@ -5,6 +5,18 @@ import math
 from .config import Config
 
 
+def _action_fcurves(action):
+    """Fcurves across Blender 4/5 action layouts."""
+    if hasattr(action, "fcurves") and action.fcurves is not None:
+        return list(action.fcurves)
+    fcs = []
+    for layer in action.layers:
+        for strip in layer.strips:
+            for bag in strip.channelbags:
+                fcs.extend(bag.fcurves)
+    return fcs
+
+
 def setup(cfg: Config) -> None:
     cam_data = bpy.data.cameras.new("Camera")
     cam_data.lens = 40.0
@@ -37,7 +49,7 @@ def setup(cfg: Config) -> None:
         target.location = (0, 0, 90)
         target.keyframe_insert(data_path="location", frame=cfg.anim_frames)
 
-        for fc in cam.animation_data.action.fcurves:
+        for fc in _action_fcurves(cam.animation_data.action):
             for kp in fc.keyframe_points:
                 kp.interpolation = "BEZIER"
                 kp.easing = "EASE_IN_OUT"

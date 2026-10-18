@@ -130,7 +130,7 @@ def generate(cfg: Config) -> None:
         light_mat = None
         for i, p in enumerate(lamp_positions[::step]):
             light_data = bpy.data.lights.new(f"LampLight{i}", type="POINT")
-            light_data.energy = 300.0
+            light_data.energy = 500.0
             light_data.color = (1.0, 0.75, 0.45)
             light_data.shadow_soft_size = 1.0
             lo = bpy.data.objects.new(f"LampLight{i}", light_data)
