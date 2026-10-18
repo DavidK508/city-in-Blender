@@ -3,13 +3,13 @@ import bpy
 
 # Palette: (name, base color, roughness, metallic, glass)
 FACADE_PALETTES = [
-    ("ConcreteLight", (0.55, 0.54, 0.52, 1.0), 0.8, 0.0, False),
-    ("ConcreteDark", (0.22, 0.22, 0.24, 1.0), 0.85, 0.0, False),
-    ("Beige", (0.48, 0.42, 0.34, 1.0), 0.8, 0.0, False),
-    ("WhitePanel", (0.75, 0.75, 0.73, 1.0), 0.7, 0.0, False),
-    ("Brick", (0.32, 0.16, 0.12, 1.0), 0.9, 0.0, False),
-    ("GlassTower", (0.04, 0.08, 0.12, 1.0), 0.15, 0.9, True),
-    ("GlassBlue", (0.06, 0.12, 0.2, 1.0), 0.12, 0.85, True),
+    ("ConcreteLight", (0.38, 0.37, 0.35, 1.0), 0.8, 0.0, False),
+    ("ConcreteDark", (0.14, 0.14, 0.16, 1.0), 0.85, 0.0, False),
+    ("Beige", (0.42, 0.34, 0.25, 1.0), 0.8, 0.0, False),
+    ("WhitePanel", (0.6, 0.6, 0.58, 1.0), 0.7, 0.0, False),
+    ("Brick", (0.28, 0.12, 0.09, 1.0), 0.9, 0.0, False),
+    ("GlassTower", (0.03, 0.06, 0.1, 1.0), 0.15, 0.9, True),
+    ("GlassBlue", (0.04, 0.1, 0.18, 1.0), 0.12, 0.85, True),
 ]
 
 

@@ -112,8 +112,8 @@ def build_building(bm, quad, height, rng, facade_idx):
         _add_tower(bm, podium_quad, podium_h, False, 1.0, z0)
         z0 += podium_h
 
-    taper = rng.uniform(0.7, 1.0) if is_tower else 1.0
-    top_scale = rng.uniform(0.55, 0.9) if is_tower else 1.0
+    taper = rng.uniform(0.8, 1.0) if is_tower else 1.0
+    top_scale = rng.uniform(0.75, 0.95) if is_tower else 1.0
     top, _ = _add_tower(bm, quad, height - (z0 - SIDEWALK_Z), taper, top_scale, z0)
 
     if is_tower and rng.random() < 0.5:
